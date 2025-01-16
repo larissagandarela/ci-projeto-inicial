@@ -20,6 +20,11 @@ func ConectaComBancoDeDados() {
 	senha := os.Getenv("DB_PASSWORD")
 	nomeBanco := os.Getenv("DB_NAME")
 	portaBanco := os.Getenv("DB_PORT")
+
+	if endereco == "" || usuario == "" || senha == "" || nomeBanco == "" || portaBanco == "" {
+		log.Panic("Erro ao obter variáveis de ambiente do banco de dados")
+	}
+
 	stringDeConexao := "host=" + endereco + " user=" + usuario + " password=" + senha + " dbname=" + nomeBanco + " port=" + portaBanco + " sslmode=disable"
 	DB, err = gorm.Open(postgres.Open(stringDeConexao))
 	if err != nil {
