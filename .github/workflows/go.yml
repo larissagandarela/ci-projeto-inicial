@@ -1,6 +1,3 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
 name: Integração Contínua
 
 on:
@@ -10,10 +7,10 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   ci:
     runs-on: ubuntu-latest
     steps:
+    
     - uses: actions/checkout@v4
 
     - name: Set up Go
@@ -21,13 +18,23 @@ jobs:
       with:
         go-version: '1.22'
 
-    - name: Inicia o banco de dados 
-      run: docker compose up -d postgres
+    - name: Inicia o banco de dados
+      run: |
+        docker compose up -d postgres
+        # Aguardar o banco de dados ficar disponível
+        until nc -z postgres 5432; do
+          echo "Aguardando banco de dados iniciar..."
+          sleep 1
+        done
 
     - name: Lint
       run: docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint golangci-lint run controllers/ database/ models/ routes/
 
-    - name: Test
-      run: go test -v main_test.go
-
-    
+    - name: Teste
+      run: docker compose exec app go test -v main_test.go
+      env:
+        DB_HOST: "postgres"
+        DB_USER: "root"
+        DB_PASSWORD: "root"
+        DB_NAME: "root"
+        DB_PORT: "5432"
