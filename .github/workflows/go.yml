@@ -23,13 +23,6 @@ jobs:
 
     - name: Inicia o banco de dados 
       run: docker compose up -d postgres
-    
-    - name: Aguardar o banco de dados ficar disponível
-      run: |
-        until docker-compose exec postgres pg_isready -U root; do
-          echo "Esperando o banco de dados ficar disponível..."
-          sleep 2
-        done
 
     - name: Lint
       run: docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint golangci-lint run controllers/ database/ models/ routes/
