@@ -28,6 +28,6 @@ jobs:
       run: docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint golangci-lint run controllers/ database/ models/ routes/
 
     - name: Test
-      run: docker compose exec app go test -v main_test.go
+      run: go test -v main_test.go
 
     
