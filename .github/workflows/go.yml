@@ -33,7 +33,7 @@ jobs:
       
     - name: Build-DB
       run: docker-compose build
-        11
+        
     - name: Create-DB
       run: docker-compose up -d
 
