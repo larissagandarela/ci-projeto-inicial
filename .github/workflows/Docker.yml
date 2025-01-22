@@ -25,4 +25,5 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: larissagandarela/go_ci:${{ github.ref_slug }}
+        tags: larissagandarela/go_ci:${{github.ref_name}}
+
