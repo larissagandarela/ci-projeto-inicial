@@ -33,7 +33,7 @@ jobs:
       
     - name: Build-DB
       run: docker-compose build
-      
+        11
     - name: Create-DB
       run: docker-compose up -d
 
@@ -50,3 +50,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build
       run: go build -v main.go
+  
+  docker:
+    needs: build
+    uses: ./.github/workflows/Docker.yml
