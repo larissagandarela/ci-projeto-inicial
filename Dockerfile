@@ -1,4 +1,4 @@
-FROM golang:1.22 AS build
+FROM golang:1.22-alpine AS build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ COPY ./main.go /app/main.go
 RUN go mod download
 RUN go build -o main main.go
 
-FROM golang:1.22 AS production
+FROM golang:1.22-alpine AS production
 
 EXPOSE 8080
 
