@@ -13,7 +13,7 @@ COPY ./main.go /app/main.go
 RUN go mod download
 RUN go build -o main main.go
 
-FROM golang:1.22-alpine AS production
+FROM alpine:latest AS production
 
 EXPOSE 8080
 
