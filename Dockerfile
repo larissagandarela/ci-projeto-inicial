@@ -1,12 +1,8 @@
-FROM ubuntu:latest
+FROM golang:1.22
 
-EXPOSE 8000
+EXPOSE 8080
 
 WORKDIR /app
-
-ENV DB_HOST=localhost DB_PORT=5432
-
-ENV DB_USER=root DB_PASSWORD=root DB_NAME=root
 
 COPY ./main main
 
