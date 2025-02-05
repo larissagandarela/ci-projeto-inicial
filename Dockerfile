@@ -4,6 +4,6 @@ EXPOSE 8080
 
 WORKDIR /app
 
-COPY ./main main
+COPY ./main /app/main
 
 CMD [ "./main" ]
