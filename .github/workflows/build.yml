@@ -24,5 +24,5 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: true
-        tags: latest,${{ github.sha }}
+        tags: larissagandarela/projeto_go:latest,${{ github.sha }}
       
