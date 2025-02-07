@@ -61,11 +61,11 @@ jobs:
     uses: ./.github/workflows/Docker.yml
     secrets: inherit
   
-  LoadTest:
-    needs: docker
-    if: ${{ =='homolog' }}
-    uses: ./.github/workflows/LoadTest.yml
-    secrets: inherit
+  # LoadTest:
+  #   needs: docker
+  #   if: ${{ =='homolog' }}
+  #   uses: ./.github/workflows/LoadTest.yml
+  #   secrets: inherit
     
   # Deploy_EC2:
   #   needs: build
@@ -76,3 +76,8 @@ jobs:
   #   needs: docker
   #   uses: ./.github/workflows/ECS.yml
   #   secrets: inherit
+
+  Deploy_EKS:
+     needs: docker
+     uses: ./.github/workflows/EKS.yml
+     secrets: inherit
