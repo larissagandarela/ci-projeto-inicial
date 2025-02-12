@@ -30,4 +30,3 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: larissagandarela/go_ci:latest
-
