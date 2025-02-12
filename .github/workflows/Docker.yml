@@ -3,7 +3,6 @@ name: Docker
 on:
   workflow_call:
     
-
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -31,4 +30,3 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: larissagandarela/go_ci:latest
-
