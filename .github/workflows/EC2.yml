@@ -1,37 +1,93 @@
-name: Entrega Contínua
+name: Deploy Go App to EC2
 
 on:
   workflow_call:
 
 jobs:
-  EC2:
+  deploy:
     runs-on: ubuntu-latest
-    steps:
-    - name: Download a Build Artifact
-      uses: actions/download-artifact@v4.1.8
-      with:
-        name: api_go
-    - uses: actions/checkout@v4
 
-    - name: ssh deploy 
-      uses: easingthemes/ssh-deploy@v5.1.0
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-        REMOTE_USER: ${{ secrets.REMOTE_USER }}
-        TARGET: /home/${{ secrets.REMOTE_USER }}
-        EXCLUDE: "postgres-data"
-    
-    - name: executing remote ssh commands using password
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY}}
-        port: 22
-        script: |
-          export DB_HOST=${{ secrets.DB_HOST }}
-          export DB_USER=${{ secrets.DB_USER }}
-          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          export DB_NAME=${{ secrets.DB_NAME }}
-          export DB_PORT=${{ secrets.DB_PORT }}
+    steps:
+      #checkout do repositório
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      #baixar o artefato compilado da aplicação Go
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: api_go
+
+      #configurar o Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      #configurar Credenciais da AWS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      #inicializar e aplicar o Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./infra
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: ./infra
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./infra
+
+      #obter o IP da instância criada pelo Terraform
+      - name: Get EC2 Public IP
+        id: ec2_ip
+        run: echo "EC2_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
+        working-directory: ./infra
+
+      #deploy dos arquivos para a instância EC2 via SSH
+      - name: Deploy via SSH
+        uses: easingthemes/ssh-deploy@v5.1.0
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ env.EC2_IP }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: /home/${{ secrets.REMOTE_USER }}/api_go
+          EXCLUDE: "postgres-data"
+
+      #executar comandos remotos na EC2
+      - name: Executing remote SSH commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.EC2_IP }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/${{ secrets.REMOTE_USER }}/api_go
+            
+            export DB_HOST=${{ secrets.AWS_DB_HOST }}
+            export DB_USER=${{ secrets.AWS_DB_USER }}
+            export DB_PASSWORD=${{ secrets.AWS_DB_PASSWORD }}
+            export DB_NAME=${{ secrets.AWS_DB_NAME }}
+            export DB_PORT=${{ secrets.AWS_DB_PORT }}
+            
+            chmod +x api_go
+            
+            sudo fuser -k 8000/tcp
+            
+            nohup ./api_go > app.log 2>&1 &
+            
+            sleep 5
+            if pgrep -f api_go > /dev/null; then
+              echo "A aplicação Go foi iniciada com sucesso!"
+            else
+              echo "Falha ao iniciar a aplicação Go."
+              exit 1
+            fi
