@@ -1,3 +1,7 @@
 pkg
 main
 postgres-data
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
