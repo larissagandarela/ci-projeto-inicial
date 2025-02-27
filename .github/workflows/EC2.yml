@@ -48,7 +48,7 @@ jobs:
       #obter o IP da instância criada pelo Terraform
       - name: Get EC2 Public IP
         id: ec2_ip
-        run: echo "EC2_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
+        run: echo "EC2_IP=$(terraform output -raw ec2_public_ip)" >> $GITHUB_ENV
         working-directory: ./infra
 
       #deploy dos arquivos para a instância EC2 via SSH
